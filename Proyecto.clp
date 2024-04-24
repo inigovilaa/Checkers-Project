@@ -69,24 +69,6 @@
     )
 )
 
-(defrule pedir-tamano-profundidad
-    (declare (salience 1000))
-=>
-    (printout t "Inserta el tamaño del tablero: 5x5 6x6 8x8" crlf)
-    (bind ?tamString (readline))
-    
-
-    (assert (tam (string-to-field(sub-string 1 1 ?tamString) ) ) ) 
-
-    (printout t "Inserta la profundidad a la que desarrollar los árboles:" crlf)
-    (bind ?prof (read))
-    (assert (profundidad ?prof))
-
-    ;(assert idActualTab 0)
-
-)
-
-
 (deffunction posibles-movs (?fila ?columna)
     (bind ?tablero (find-fact ((?f tablero)) (= ?f:ID 1)))
     (bind ?mapeo ?tablero:mapeo)
@@ -107,14 +89,25 @@
         )
 
     )
-
-
-
-
-
-
-
     )
+)
+
+
+(defrule pedir-tamano-profundidad
+    (declare (salience 1000))
+=>
+    (printout t "Inserta el tamaño del tablero: 5x5 6x6 8x8" crlf)
+    (bind ?tamString (readline))
+    
+
+    (assert (tam (string-to-field(sub-string 1 1 ?tamString) ) ) ) 
+
+    (printout t "Inserta la profundidad a la que desarrollar los árboles:" crlf)
+    (bind ?prof (read))
+    (assert (profundidad ?prof))
+
+    ;(assert idActualTab 0)
+
 )
 
 (defrule iniciar-tablero
@@ -159,4 +152,6 @@
 
   (imprimir-mapeo $?mapa)
 )
+
+
 
