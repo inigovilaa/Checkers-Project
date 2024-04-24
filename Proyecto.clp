@@ -74,16 +74,60 @@
     (printout t "Inserta el tamaño del tablero: 5x5 6x6 8x8" crlf)
     (bind ?tamString (readline))
     
-    (assert (bind ?tam (sub-string 1 1 (?tamString)))) 
+    (assert tam(bind ?tam (sub-string 1 1 (?tamString)))) 
 
     (printout t "Inserta la profundidad a la que desarrollar los árboles:" crlf)
     (bind ?prof (read))
     (assert ?prof)
 )
 
-(defrule iniciar-tablero
-  (tam ?x)
-=>
-;poner de momento solo una fila en la anteultima
+
+
+(deffunction posibles-movs (?fila ?columna)
+    (bind ?tablero (find-fact ((?f tablero)) (= ?f:ID 1)))
+    (bind ?mapeo ?tablero:mapeo)
+    (bind ?tamanoFila (sqrt(length$ ?mapeo)))
+    (bind ?posicion (+ (* ?tamanoFila (- ?fila 1)) ?columna))
+    (bind ?contenido (nth$ ?posicion $?mapeo))
+    (bind $?movimientos (create$))
+
+    (if (eq ?contenido 0) then
+      (printout t "Posición vacía, elija otra posicion" crlf)
+    else(
+      if (eq ?contenido -1) then ;ficha negra
+        if(eq(nth$ (+ ?posicion ?tamanoFila) ?mapeo) 0) then ;se puede hacer movimiento hacia abajo
+
+        else(
+          if(and(eq(nth$ (+ ?posicion 1) ?mapeo) 0)(eq(mod ?posicion ?tamanoFila)0)) then ;mov a a la dch
+        ;en esta situacion si se puede hacer el movimiento a la derecga
+        )
+
+    )
+
+
+
+
+
+
+
+    )
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
 )
+
+
+
+
 
