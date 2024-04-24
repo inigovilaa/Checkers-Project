@@ -92,20 +92,20 @@
 =>
 ;poner de momento solo una fila en la penultima
   (bind $?mapa (create$))
-  (loop-for-count (?i 1 (* ?x ?x))
-    (if (or (<= ?i ?x);primera fila
-            (and (> ?i (* ?x 2)) ;de 2 fila palante 
-                 (<= ?i (-(* ?x ?x)(* 2 ?x))));de penultima pa tras
-            (> ?i (- (* ?x ?x) ?x));de penultima pa lante
+  (loop-for-count (?i 1 (* ?x ?x)) ;e.g 5*5
+    (if (or (<= ?i ?x);primera fila (1..5)
+            (and (> ?i (* ?x 2)) ;de 2 fila palante (11..)
+                 (<= ?i (-(* ?x ?x)(* 2 ?x))));de penultima pa tras(..15)
+            (> ?i (- (* ?x ?x) ?x));de penultima pa lante (21..25)
         )then 
       (bind $?mapa (create$ $?mapa 0))
     else
-      (if (and (> ?i ?x)
+      (if (and (> ?i ?x) ;segunda fila (6..10)
                (<= ?i (* ?x 2))
           ) then
         (bind $?mapa (create$ $?mapa -1))
       )
-      (if (and (> ?i (-(* ?x ?x)(* 2 ?x))) 
+      (if (and (> ?i (-(* ?x ?x)(* 2 ?x))) ;(16..20)
                (<= ?i (-(* ?x ?x)?x))
           ) then
         (bind $?mapa (create$ $?mapa 1))
