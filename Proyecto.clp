@@ -110,12 +110,9 @@
 
 
 
-
-
-
-
     )
 )
+
 
 (defrule iniciar-tablero
   (declare (salience 999))
@@ -158,5 +155,60 @@
   )
 
   (imprimir-mapeo $?mapa)
+)
+  (defrule pedir-movimiento
+   (declare (salience 800))
+=>
+    (printout t "Inserta la coordenada de la ficha que quieras mover" crlf)
+    (bind ?lineaOrigen (readline))
+    (assert (origen (string-to-field(sub-string 1 1 ?lineaOrigen)) (string-to-field(sub-string 3 3 ?lineaOrigen))))
+    
+    (printout t "Inserta la coordenada a la que quieras mover la ficha" crlf)
+    (bind ?lineaDestino (readline))
+    (assert (destino (string-to-field(sub-string 1 1 ?lineaDestino)) (string-to-field(sub-string 3 3 ?lineaDestino))))
+
+  
+  )
+
+  (defrule mov-izquierda
+    (idActual ?ID)
+    ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+    (origen ?filaOrigen ?colOrigen)
+    =>
+    (bind ?tamanoFila (sqrt(length$ ?mapeo)))
+    (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
+    (bind ?posDestino (-(?posOrigen 1)))
+    (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+
+    (if(and (neq(mod (?posOrigen ?tamanoFila)) 1) (neq (?fichaOrigen ?fichaDestino)) ) then
+      (if(eq (?fichaDestino 0)) then
+       (bind ?newId (+(?ID 1)))
+       (bind ?newPadre ?ID)
+       (bind ?auxMap ($replace ?mapeo ?posDestino ?posDestino ?fichaOrigen))
+       (bind ?newMap ($replace ?auxMap ?posOrigen ?posOrigen 0))
+          (assert (tablero
+            (ID ?newID)
+            (padre ?newPadre)
+            (heuristico 0.0)
+            (mapeo $?newMap)
+            (profundidad 0)
+            (movs )
+            (Min 0)
+            (Max 0)
+          )    
+      )
+    ) else (
+        (bind ?saltoComer (nth$ (- (?posDestino 2)) $?mapeo)) ;esta variable si es 0 significa q se puede comer porq hay hueco
+        (if(and (neq(mod ((- (?posOrigen 1)) ?tamanoFila)) 1) (eq (?saltoComer 0))) then
+
+
+        )
+
+
+    )
+
+
+  )
 )
 
