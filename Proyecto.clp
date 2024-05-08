@@ -122,7 +122,7 @@
 ;mov izq
 (defrule mov-izquierda
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
   (origen ?filaOrigen ?colOrigen)
 
 =>
@@ -137,19 +137,18 @@
     (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
       (bind ?newId (+ ?ID 1))
       (bind ?newPadre ?ID)
-      (bind ?auxMap (replace$ ?mapeo ?posDestino ?posDestino ?fichaOrigen))
-      (bind ?newMap (replace$ ?auxMap ?posOrigen ?posOrigen 0))
+      (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+      (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
        
       (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
       
     else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria
-      (bind ?saltoComer (nth$ (- ?posDestino 1) $?mapeo)) ;esta variable si es 0 significa q se puede comer porq hay hueco
-      (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq ?saltoComer 0)) then
+      (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq ((nth$ (- ?posDestino 1) $?mapeo)) 0)) then ;se comprueba primero que la posicion de al lado no es borde y despues que la posicion a la q se salta es 0
         (bind ?newId (+ ?ID 1))
         (bind ?newPadre ?ID)
-        (bind ?auxMap (replace$ ?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
-        (bind ?auxMap2 (replace$ ?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
-        (bind ?newMap (replace$ ?auxMap2 ?posOrigen ?posOrigen 0))
+        (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
+        (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+        (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
 
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
 
@@ -164,7 +163,7 @@
 ;mov der
 (defrule mov-derecha
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
   (origen ?filaOrigen ?colOrigen)
 
 =>
@@ -179,8 +178,8 @@
     (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
       (bind ?newId (+ ?ID 1))
       (bind ?newPadre ?ID)
-      (bind ?auxMap (replace$ ?mapeo ?posDestino ?posDestino ?fichaOrigen))
-      (bind ?newMap (replace$ ?auxMap ?posOrigen ?posOrigen 0))
+      (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+      (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
        
       (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
       
@@ -188,9 +187,9 @@
       (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq ((nth$ (+ ?posDestino 1) $?mapeo)) 0)) then ;se comprueba que 
         (bind ?newId (+ ?ID 1))
         (bind ?newPadre ?ID)
-        (bind ?auxMap (replace$ ?mapeo (+ ?posOrigen 2) (+ ?posOrigen 2) ?fichaOrigen))
-        (bind ?auxMap2 (replace$ ?auxMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
-        (bind ?newMap (replace$ ?auxMap2 ?posOrigen ?posOrigen 0))
+        (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen 2) (+ ?posOrigen 2) ?fichaOrigen))
+        (bind $?auxMap2 (replace$ $?auxMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
+        (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
         
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
@@ -220,19 +219,19 @@
     (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
       (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
         (bind ?newId (+ ?ID 1))
-        (bind ?newPadre ?ID)
-        (bind ?auxMap (replace$ ?mapeo ?posDestino ?posDestino ?fichaOrigen))
-        (bind ?newMap (replace$ ?auxMap ?posOrigen ?posOrigen 0))
+        (bind $?newPadre ?ID)
+        (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+        (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
         
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq ((nth$ (+ ?posDestino 1) $?mapeo)) 0)) then ;se comprueba que 
+        (if (and (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1))) (eq ((nth$ (+ ?posDestino ?tamanoFila) $?mapeo)) 0)) then ;se comprueba que 
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
-          (bind ?auxMap (replace$ ?mapeo (+ ?posOrigen 2) (+ ?posOrigen 2) ?fichaOrigen))
-          (bind ?auxMap2 (replace$ ?auxMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
-          (bind ?newMap (replace$ ?auxMap2 ?posOrigen ?posOrigen 0))
+          (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen (* ?tamanoFila 2)) (+ ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
+          (bind $?auxMap2 (replace$ $?auxMap (+ ?posOrigen ?tamanoFila) (+ ?posOrigen ?tamanoFila) 0)) ; posicion que come
+          (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0)) ; posicion en la q estaba
           
           (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
           ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
@@ -243,6 +242,51 @@
   )
 )
 
+
+
+
+;mov arriba
+
+(defrule mov-abajo
+  (idActual ?ID)
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  (origen ?filaOrigen ?colOrigen)
+  (IA ?IA)
+
+=>
+
+  (if(eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
+    (bind ?tamanoFila (sqrt(length$ $?mapeo)))
+    (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen)) ;esto es igual para todas las rules
+    (bind ?posDestino (+ ?posOrigen ?tamanoFila))
+    (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+
+    (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
+      (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
+        (bind ?newId (+ ?ID 1))
+        (bind $?newPadre ?ID)
+        (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+        (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+        
+        (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+        
+      else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
+        (if (and (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1))) (eq ((nth$ (- ?posDestino ?tamanoFila) $?mapeo)) 0)) then ;se comprueba que 
+          (bind ?newId (+ ?ID 1))
+          (bind ?newPadre ?ID)
+          (bind $?auxMap (replace$ $?mapeo (- ?posOrigen (* ?tamanoFila 2)) (- ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
+          (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen ?tamanoFila) (- ?posOrigen ?tamanoFila) 0)) ; posicion que come
+          (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0)) ; posicion en la q estaba
+          
+          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+          ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
+        
+        )     
+      )
+    )
+  )
+)
 
 
 ;pasar a las funciones por parametro el tablero y el color de la ficha
