@@ -94,35 +94,89 @@
 ;    ;mover 
 ;)
 
-
-
+(deffunction manhattanDistance (?origX ?origY ?destX ?destY)
+  (bind ?distance (+ (abs (- ?origX ?destX)) (abs (- ?origY ?destY))))
+  (return ?distance)
+)
 
 (defrule pedir-movimiento
-  (declare (salience 800))
-  (idActual ?x)
-  (tablero (ID ?x))
-  
+  ;(declare (salience 800))
+  (idActual ?ID)
+  (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(turno ?i))
+  ;(colorReal (* -1 ?i))
+  (turno ?tur)
+  (test (eq ?tur (* -1 ?i)))
 =>
+  (bind ?tamanoFila (integer(sqrt(length$ $?mapeo))))
 
-  (printout t "Inserta la coordenada de la ficha que quieras mover" crlf)
+  (printout t "Inserta la coordenada de la ficha que quieras mover:" crlf)
   (bind ?lineaOrigen (readline))
 
-  (bind ?origen (string-to-field(sub-string 1 1 ?lineaOrigen)) (string-to-field(sub-string 3 3 ?lineaOrigen)))
-  (printout t "Inserta la coordenada a la que quieras mover la ficha" crlf)
+  (bind ?filaOrigen (string-to-field(sub-string 1 1 ?lineaOrigen)))
+  (bind ?colOrigen (string-to-field(sub-string 3 3 ?lineaOrigen)))
+  (bind ?posOrigen (integer (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen)))
+  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
 
-  (bind ?lineaDestino (readline))
-  (bind ?destinoReal (string-to-field(sub-string 1 1 ?lineaDestino)) (string-to-field(sub-string 3 3 ?lineaDestino)))
   
+  (printout t "Inserta la coordenada a cordenada los movimientos de la ficha:" crlf)
+  (bind ?lineaDestino (readline))
+  (bind ?long (str-length ?lineaDestino))
+  ;minimo primer salto
 
+  (bind ?newId (+ ?ID 1))
+  (bind ?newPadre ?ID)
 
+  (if (eq ?long 3) then ;it only has one jump/step
+    (bind ?filaDestino (string-to-field(sub-string 1 1 ?lineaDestino)))
+    (bind ?colDestino (string-to-field(sub-string 3 3 ?lineaDestino)))
+    (bind ?posDestino (integer (+ (* ?tamanoFila (- ?filaDestino 1)) ?colDestino)))
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
 
+    (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+    (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+
+    (if (eq (manhattanDistance ?filaOrigen ?colOrigen ?filaDestino ?colDestino) 2) then ;1 comido
+      (if (eq ?posDestino (- ?posOrigen 2)) then ;comido + izq
+        (bind $?newMap (replace$ $?newMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+      else 
+        (if (eq ?posDestino (+ ?posOrigen 2)) then ;comido + derecha
+          (bind $?newMap (replace$ $?newMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
+        else
+          (if (eq ?posDestino (- ?posOrigen (* 2 ?tamanoFila))) then ;comido + salto hacia arriba
+            (bind $?newMap (replace$ $?newMap (- ?posOrigen ?tamanoFila) (- ?posOrigen ?tamanoFila) 0))
+          else
+            (bind $?newMap (replace$ $?newMap (+ ?posOrigen ?tamanoFila) (+ ?posOrigen ?tamanoFila) 0))
+          )
+        )
+      )
+    )
+    
+  else ;mas de un salto
+    (bind ?i 1x)
+    (while (< ?i ?long)
+      (bind ?filaDestino (string-to-field(sub-string 1 1 ?lineaDestino)))
+      (bind ?colDestino (string-to-field(sub-string 3 3 ?lineaDestino)))  
+    )
+  )
+  
+  (if (eq ?i 1) then
+    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?filaDestino ?colDestino) (Min 0) (Max 0) (turno -1)))
+    (assert (turno 1))
+
+  else
+    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?filaDestino ?colDestino) (Min 0) (Max 0) (turno 1)))
+    (assert (turno -1))
+  )
+  (assert (idActual (+ ?ID 1)))
+  (imprimir-mapeo $?newMap)
+  ;(bind ?destino (string-to-field(sub-string 1 1 ?lineaDestino)) (string-to-field(sub-string 3 3 ?lineaDestino)))
 )
 
 
 ;mov izq
 (defrule mov-izquierda
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
   (origen ?filaOrigen ?colOrigen)
 
 =>
@@ -137,10 +191,10 @@
     (if (eq ?fichaDestino 0) then
       (bind ?newId (+ ?ID 1))
       (bind ?newPadre ?ID)
-      (bind ?auxMap (replace$ ?mapeo ?posDestino ?posDestino ?fichaOrigen))
+      (bind ?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
       (bind ?newMap (replace$ ?auxMap ?posOrigen ?posOrigen 0))
        
-      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)));movs?
       
     else
       
@@ -180,14 +234,15 @@
     (bind ?prof (read))
     (assert (profundidad ?prof))
 
-    (printout t "Elige el color que quieres ser 1(blanco) 0(negro):" crlf)
+    (printout t "Elige el color que quieres ser 1(blanco) -1(negro):" crlf)
     (bind ?color (read))
     (assert (colorReal ?color))
+    (assert (turno 1))
 
-    (if (eq colorReal 1) then
-      (assert turno 1)
+    (if (eq ?color 1) then
+      (assert (colorIA -1))
     else
-      (assert turno 0)
+      (assert (colorIA 1))
     )
 
 )
@@ -195,9 +250,8 @@
 (defrule iniciar-tablero
   (declare (salience 999))
   (tam ?x)
-  ;?tabnum <- (idActual ?y)
+  (profundidad ?p)
   (colorReal ?y)
-  ?a <-(turno ?z)
 =>
 ;poner de momento solo una fila en la penultima
   (bind $?mapa (create$))
@@ -244,9 +298,9 @@
       )
     )
   )
-
+  ;hay que editar
   (assert (tablero
-            (ID 1)
+            (ID 0)
             (padre 0)
             (heuristico 0.0)
             (mapeo $?mapa)
@@ -254,14 +308,15 @@
             (movs )
             (Min 0)
             (Max 0)
-            (turno ?z)
+            (turno -1)
           )
   )
 
   (imprimir-mapeo $?mapa)
   ;(modify ?tabNum (idActual (+ 1 ?y)))
   (assert (idActual 0))
-  (retract ?a)
+  (assert (turno 1))
+
 )
 
 
