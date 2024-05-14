@@ -50,7 +50,9 @@
   (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(turno ?i))
   ?a <- (turno ?tur)
   (test (eq ?tur (* -1 ?i)))
-=>
+
+  =>
+
   (printout t "Inserta la coordenada de la ficha que quieras mover:" crlf)
   (bind ?lineaOrigen (explode$(readline)))
 
@@ -241,11 +243,13 @@
   (declare (salience 999))
   (tam ?x)
   (profundidad ?p)
-  (colorReal ?y)
-=>
-;poner de momento solo una fila en la penultima
+  (colorReal ?color)
+
+  =>
+
+  ;poner de momento solo una fila en la penultima
   (bind $?mapa (create$))
-  (if (eq ?y 1) then
+  (if (eq ?color 1) then
     (loop-for-count (?i 1 (* ?x ?x)) ;e.g 5*5
       (if (or (<= ?i ?x);primera fila (1..5)
               (and (> ?i (* ?x 2)) ;de 2 fila palante (11..)
