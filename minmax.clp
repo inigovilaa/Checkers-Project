@@ -9,7 +9,21 @@
   (return ?valor)
 )
 
-; hecho con reglas
+; Tenemos una cantidad X de facts TABLERO en nuestra base de datos de hechos. Sobre esos hechos tenemos que aplicar el algoritmo que nos diga que tablero (mov)
+; es el más adecuado según nuestra función de evaluación
+;
+; 
+;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
+;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
+;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
+; ...
+; ...
+;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
+;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
+;
+;
+; El algoritmo empieza desde la base por lo que tendremos que empezar por lo hechos cuyo depth sea igual al depth que tenemos establecido como fact inicial
+
 (defrule minmax
   ?start <- (start minmax)
   ?depth <- (depth ?depth)
@@ -20,23 +34,3 @@
   (printout t ?tablero)
   (retract ?start)
 )
-
-; hecho con funciones
-(deffunction value (?depth ?player $?tablero)
-  ; comprobamos que sea la depth que queremos o que sea un tablero terminado
-  (if (or (eq ?depth 0) (win)) then (return eval-function($?tablero)) )
-
-  ; si le toca al jugador max
-  (max ?depth ?player $?tablero)
-
-  ; si le toca al jugador min
-  (min ?depth ?player $?tablero)
-)
-
-; (deffunction minValue (?depth ?player $?tablero)
-;   (bind ?v -999999999)
-; 
-;   (do-for-all-facts 
-; 
-;   )
-; )
