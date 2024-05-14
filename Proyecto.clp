@@ -10,6 +10,8 @@
   (slot turno)
 )
 
+(load imprimir.clp)
+(load minmax.clp)
 ;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
 
 ;(deffunction posibles-movs (?fila ?columna)
