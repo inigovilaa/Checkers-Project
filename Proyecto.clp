@@ -92,11 +92,11 @@
 ;mov izq
 (defrule mov-izquierda
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(reinaCreada ?reinaCreada))
   ;(origen ?filaOrigen ?colOrigen)
 
 =>
-
+(if (eq ?reinaCreada 0) then
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
   (bind ?i 0)
   (foreach ?ficha $?mapeo
@@ -135,15 +135,16 @@
     )
   )
 )
+)
 
 ;mov der
 (defrule mov-derecha
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(reinaCreada ?reinaCreada))
   (origen ?filaOrigen ?colOrigen)
 
 =>
-
+(if (eq ?reinaCreada 0) then
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
    (bind ?i 0)
   (foreach ?ficha $?mapeo
@@ -181,18 +182,19 @@
   )
   )
 )
+)
 
 ;mov abajo
 
 (defrule mov-abajo
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo)(reinaCreada ?reinaCreada))
   (origen ?filaOrigen ?colOrigen)
   (colorIA ?IA)
 
 =>
 ; HAY QUE MOVEER EL IF??????
-  (if(eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
+  (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
     (bind ?i 0)
     (foreach ?ficha $?mapeo
@@ -200,6 +202,8 @@
     (bind ?posOrigen ?i)
     (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
     (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+    (bind ?filaDestino (+ ?filaOrigen 1))
+    (bind ?colDestino ?colOrigen)    
     (bind ?posDestino (+ ?posOrigen ?tamanoFila))
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -214,7 +218,7 @@
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1))) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
+        (if (and (neq ?filaOrigen (- ?tamanoFila 1)) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
           (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen (* ?tamanoFila 2)) (+ ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
@@ -242,7 +246,7 @@
 
 =>
 ;falta el loop que vaya cogiendo cada ficha y dentro del loop comprobacion de si la ficha es del color q toca
-  (if(eq ?IA 1) then ;solo se genera movimiento hacia abajo para las fichas blancas
+  (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas blancas
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
      (bind ?i 0)
   (foreach ?ficha $?mapeo
@@ -251,11 +255,12 @@
     (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
     (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
   ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
+    (bind ?filaDestino (- ?filaOrigen 1))
+    (bind ?colDestino ?colOrigen)
     (bind ?posDestino (+ ?posOrigen ?tamanoFila))
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
-
-    (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
+    (if ?filaDestino (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1)))
       (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
         (bind ?newId (+ ?ID 1))
         (bind $?newPadre ?ID)
@@ -265,7 +270,7 @@
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1))) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
+        (if (and (neq ?filaOrigen 2) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
           (bind $?auxMap (replace$ $?mapeo (- ?posOrigen (* ?tamanoFila 2)) (- ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
@@ -384,6 +389,7 @@
             (Min 0)
             (Max 0)
             (turno ?z)
+            (reinaCreada 0)
           )
   )
 
