@@ -7,37 +7,71 @@
   (multislot movs)
   (slot Min (default 0))
   (slot Max (default 0))
-  (slot turno)
+  (slot jugador)
 )
 
 (load imprimir.clp)
 (load minmax.clp)
 ;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
 
-;(deffunction posibles-movs (?fila ?columna)
-;    (bind ?tablero (find-fact ((?f tablero)) (= ?f:ID 1)))
-;    (bind ?mapeo ?tablero:mapeo)
-;    (bind ?tamanoFila (sqrt(length$ ?mapeo)))
-;    (bind ?posicion (+ (* ?tamanoFila (- ?fila 1)) ?columna))
-;    (bind ?contenido (nth$ ?posicion $?mapeo))
-;    (bind $?movimientos (create$))
-;
-;    (if (eq ?contenido 0) then
-;      (printout t "Posición vacía, elija otra posicion" crlf)
-;    else(
-;      if (eq ?contenido -1) then ;ficha negra
-;        if(eq(nth$ (+ ?posicion ?tamanoFila) ?mapeo) 0) then ;se puede hacer movimiento hacia abajo
-;
-;        else(
-;          if(and(eq(nth$ (+ ?posicion 1) ?mapeo) 0)(eq(mod ?posicion ?tamanoFila)0)) then ;mov a a la dch
-;        ;en esta situacion si se puede hacer el movimiento a la derecga
-;        )
-;
-;    )
-;    )
-;    ;mover abajo
-;    ;mover 
-;)
+
+(deffunction generarLineas (?x)
+  (printout t crlf)
+  (printout t "      |")
+  (loop-for-count ?x
+    (printout t "-----|")
+  )
+  (printout t crlf)
+)
+
+(deffunction generarLineas2 (?x)
+  (printout t " ")
+  (loop-for-count ?x
+    (printout t "     |")
+  )
+  (printout t "     |")
+  (printout t crlf)
+)
+
+;Imprimir el estado actual del mapeo
+(deffunction imprimir-mapeo ($?mapeo)
+    (bind ?tamanoFila (integer (sqrt (length$ $?mapeo))))
+    (printout ?tamanoFila)
+    (printout t crlf)
+    (printout t  crlf)
+    (loop-for-count (?i 0 ?tamanoFila) do
+      (if (= ?i 0) then
+      (printout t "       ")
+      else
+      (printout t "  "?i "   "))
+    )
+    (generarLineas ?tamanoFila)
+    (loop-for-count (?fila 1 ?tamanoFila ) do
+      (generarLineas2 ?tamanoFila)
+      (printout t "   " ?fila "  |" )
+      (loop-for-count (?columna 1 ?tamanoFila) do
+            (bind ?contenido (nth$  (+ (* ?tamanoFila (- ?fila 1)) ?columna) $?mapeo))
+			(if (or (eq ?contenido 1)(eq ?contenido -1)(eq ?contenido 2)(eq ?contenido -2)) then
+                (if (eq ?contenido 1) then
+                    (printout t  "  o  |")
+                )
+				(if (eq ?contenido -1) then
+                    (printout t  "  x  |")
+                )
+                (if (eq ?contenido 2) then
+                    (printout t  " oOo |")
+                )
+				(if (eq ?contenido -2) then
+                    (printout t  " xXx |")
+                )
+			else
+				(printout t "     |")
+			)
+      )
+      (generarLineas ?tamanoFila)
+    )
+)
+
 
 (deffunction manhattanDistance (?origX ?origY ?destX ?destY)
   (bind ?distance (+ (abs (- ?origX ?destX)) (abs (- ?origY ?destY))))
@@ -46,8 +80,9 @@
 
 (defrule pedir-movimiento
   (tam ?tamanoFila)
-  (idActual ?ID)
-  (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(turno ?i))
+  ?b <- (idActual ?ID)
+  (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(jugador ?i))
+  (colorReal ?tur)
   ?a <- (turno ?tur)
   (test (eq ?tur (* -1 ?i)))
 
@@ -150,13 +185,14 @@
   )
   
   (retract ?a)
+  (retract ?b)
 
   (if (eq ?i 1) then
-    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?lineaDestino) (Min 0) (Max 0) (turno -1)))
+    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?lineaDestino) (Min 0) (Max 0) (jugador -1)))
     (assert (turno 1))
 
   else
-    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?lineaDestino) (Min 0) (Max 0) (turno 1)))
+    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ?lineaDestino) (Min 0) (Max 0) (jugador 1)))
     (assert (turno -1))
   )
   (assert (idActual (+ ?ID 1)))
@@ -201,7 +237,6 @@
 
 ;pasar a las funciones por parametro el tablero y el color de la ficha
 ;mov der
-
 ;mov izq
 ;mov arriba
 ;mov abajo
@@ -302,7 +337,7 @@
             (movs )
             (Min 0)
             (Max 0)
-            (turno -1)
+            (jugador -1)
           )
   )
 
