@@ -146,13 +146,16 @@
 =>
 (if (eq ?reinaCreada 0) then
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-   (bind ?i 0)
-  (foreach ?ficha $?mapeo
+  (bind ?i 0)
+  (bind ?seguirMovDama 0)
+  (foreach ?ficha $?mapeo ;se iteran todas las fichas del mapeo HAY Q PONER Q SOLO SE ITEREN LAS DEL TURNO Q TOCA??? (con lo de la profundidad y tal)
   (bind ?i (+ ?i 1))
+  
+  (if(and(neq ?ficha -2) (neq ?ficha 2)) then  ;2 y -2 son las reinas blancas y negras
+  
   (bind ?posOrigen ?i)
   (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
   (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
-  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
   (bind ?posDestino (+ ?posOrigen 1))
   (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
   (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -180,7 +183,44 @@
       )     
     )
   )
+  else                                  ;este else es para cuando la ficha q toca es una reina
+                                        ;hay q hacer un while se puede seguir moviendo la reina...
+  
+;WHILE:::: FALTA CONDICION DEL WHILE
+(while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+  (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
+    (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
+      (bind ?newId (+ ?ID 1))
+      (bind ?newPadre ?ID)
+      (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+      (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+       
+      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+      
+    else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
+      (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq (nth$ (+ ?posDestino 1) $?mapeo) 0)) then ;se comprueba que 
+        (bind ?newId (+ ?ID 1))
+        (bind ?newPadre ?ID)
+        (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen 2) (+ ?posOrigen 2) ?fichaOrigen))
+        (bind $?auxMap2 (replace$ $?auxMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
+        (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
+        
+        (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+  
+  (bind ?posOrigen (?posOrigen +1))
+  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+  (bind ?posDestino (+ ?posOrigen 1))
+  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+  (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
   )
+    )
+  else
+    (bind ?seguirMovDama 1)     
+    )
+  )
+  )
+)
 )
 )
 
@@ -221,15 +261,20 @@
         (if (and (neq ?filaOrigen (- ?tamanoFila 1)) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
-          (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen (* ?tamanoFila 2)) (+ ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
-          (bind $?auxMap2 (replace$ $?auxMap (+ ?posOrigen ?tamanoFila) (+ ?posOrigen ?tamanoFila) 0)) ; posicion que come
-          (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0)) ; posicion en la q estaba
+        (if eq ?filaOrigen (- ?tamanoFila 2) then ;si entra en este if se va a crear una reina
+          (bind ?reinaCreada 1)
+          (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen (* ?tamanoFila 2)) (+ ?posOrigen (* ?tamanoFila 2)) -2)) ; posicion a la q salta (se pone una reina negra)
+         else
+            (bind $?auxMap (replace$ $?mapeo (+ ?posOrigen (* ?tamanoFila 2)) (+ ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
+        )
+          (bind $?auxMap2 (replace$ $?auxMap (+ ?posOrigen ?tamanoFila) (+ ?posOrigen ?tamanoFila) 0)) ; posicion que come se pone a 0
+          (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0)) ; posicion en la q estaba se pone a 0 tambien
           
-          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0) (reinaCreada ?reinaCreada)))
           ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
         
-        )     
-      )
+        ) 
+      )    
     )
   )
   )
@@ -237,10 +282,9 @@
 
 
 ;mov arriba
-
 (defrule mov-arriba
   (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
+  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo)(reinaCreada ?reinaCreada))
   (origen ?filaOrigen ?colOrigen)
   (colorIA ?IA)
 
@@ -248,7 +292,7 @@
 ;falta el loop que vaya cogiendo cada ficha y dentro del loop comprobacion de si la ficha es del color q toca
   (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas blancas
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-     (bind ?i 0)
+    (bind ?i 0)
   (foreach ?ficha $?mapeo
     (bind ?i (+ ?i 1))
     (bind ?posOrigen ?i)
@@ -270,14 +314,20 @@
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (neq ?filaOrigen 2) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
+        (if (and (neq ?filaOrigen 2) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que        
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
-          (bind $?auxMap (replace$ $?mapeo (- ?posOrigen (* ?tamanoFila 2)) (- ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
+          (if eq ?filaOrigen (- ?tamanoFila 2) then ;si entra en este if se va a crear una reina blanca
+            (bind ?reinaCreada 1)
+            (bind $?auxMap (replace$ $?mapeo (- ?posOrigen (* ?tamanoFila 2)) (- ?posOrigen (* ?tamanoFila 2)) 2)) ; posicion a la q salta se crea una reina blanca
+          else
+              (bind $?auxMap (replace$ $?mapeo (- ?posOrigen (* ?tamanoFila 2)) (- ?posOrigen (* ?tamanoFila 2)) ?fichaOrigen)) ; posicion a la q salta
+
+          )
           (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen ?tamanoFila) (- ?posOrigen ?tamanoFila) 0)) ; posicion que come
           (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0)) ; posicion en la q estaba
           
-          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs (create$ ?filaOrigen ?colOrigen)) (Min 0) (Max 0)))
+          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs (create$ ?filaOrigen ?colOrigen)) (Min 0) (Max 0) (reinaCreada ?reinaCreada)))
           ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
         )     
       )
