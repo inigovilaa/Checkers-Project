@@ -94,6 +94,7 @@
   (idActual ?ID)
   ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo)(reinaCreada ?reinaCreada))
   ;(origen ?filaOrigen ?colOrigen)
+    (colorIA ?IA)
 
 =>
 (if (eq ?reinaCreada 0) then
@@ -269,16 +270,18 @@
 (defrule mov-abajo
   (idActual ?ID)
   ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo)(reinaCreada ?reinaCreada))
-  (origen ?filaOrigen ?colOrigen)
   (colorIA ?IA)
 
 =>
-; HAY QUE MOVEER EL IF??????
+; HAY QUE MOVEER EL IF?????? REVUSAR EL IF LO DE IA -1
   (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
     (bind ?i 0)
+    (bind ?seguirMovDama 0)
+    
     (foreach ?ficha $?mapeo
     (bind ?i (+ ?i 1))
+    (if (eq ?ficha -1) then  ;si la ficha es negra normal
     (bind ?posOrigen ?i)
     (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
     (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
@@ -288,7 +291,7 @@
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
 
-    (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
+    (if (and (neq ?filaOrigen ?tamanoFila)) (neq ?fichaOrigen ?fichaDestino)  then 
       (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
         (bind ?newId (+ ?ID 1))
         (bind $?newPadre ?ID)
@@ -298,7 +301,7 @@
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (neq ?filaOrigen (- ?tamanoFila 1)) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que 
+        (if (and (neq ?filaDestino (?tamanoFila) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0))) then ;se comprueba que 
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
         (if eq ?filaOrigen (- ?tamanoFila 2) then ;si entra en este if se va a crear una reina
@@ -317,6 +320,48 @@
       )    
     )
   )
+  
+  )
+  
+  else
+    (if(or(eq ?ficha 2) (eq ?ficha -2)) then 
+      (while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+        (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
+          (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
+            (bind ?newId (+ ?ID 1))
+            (bind ?newPadre ?ID)
+            (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+            (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+            
+            (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+            
+          else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
+            (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq (nth$ (+ ?posDestino 1) $?mapeo) 0)) then ;se comprueba que 
+              (bind ?newId (+ ?ID 1))
+              (bind ?newPadre ?ID)
+              (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
+              (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+              (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
+              
+              (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+        
+        (bind ?posOrigen (- ?posOrigen 1))
+        (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+        (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+        ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
+        (bind ?posDestino (- ?posOrigen 1))
+        (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+        (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+        )
+          )
+      else
+          (bind ?seguirMovDama 1)     
+          )
+  )    
+
+
+
+    )  
   )
 )
 
@@ -344,7 +389,8 @@
     (bind ?posDestino (+ ?posOrigen ?tamanoFila))
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
-    (if ?filaDestino (<= ?posOrigen (* ?tamanoFila (- ?tamanoFila 1)))
+    
+    (if (neq ?filaOrigen 1) then
       (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
         (bind ?newId (+ ?ID 1))
         (bind $?newPadre ?ID)
@@ -354,7 +400,7 @@
         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
       else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-        (if (and (neq ?filaOrigen 2) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que        
+        (if (and (neq ?filaDestino 1) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then ;se comprueba que        
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
           (if eq ?filaOrigen (- ?tamanoFila 2) then ;si entra en este if se va a crear una reina blanca
