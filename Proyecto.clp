@@ -10,34 +10,150 @@
   (slot turno)
 )
 
-(load imprimir.clp)
+;(load imprimir.clp)
 (load minmax.clp)
-;(Tablero (ID x)(Padre Y)(Heuristico Z)(Mapeo ...)(Prof u)(Movs 1 2 1 4 3 4)(Alpha )(Beta )(Min )(Max )
 
-;(deffunction posibles-movs (?fila ?columna)
-;    (bind ?tablero (find-fact ((?f tablero)) (= ?f:ID 1)))
-;    (bind ?mapeo ?tablero:mapeo)
-;    (bind ?tamanoFila (sqrt(length$ ?mapeo)))
-;    (bind ?posicion (+ (* ?tamanoFila (- ?fila 1)) ?columna))
-;    (bind ?contenido (nth$ ?posicion $?mapeo))
-;    (bind $?movimientos (create$))
-;
-;    (if (eq ?contenido 0) then
-;      (printout t "Posición vacía, elija otra posicion" crlf)
-;    else(
-;      if (eq ?contenido -1) then ;ficha negra
-;        if(eq(nth$ (+ ?posicion ?tamanoFila) ?mapeo) 0) then ;se puede hacer movimiento hacia abajo
-;
-;        else(
-;          if(and(eq(nth$ (+ ?posicion 1) ?mapeo) 0)(eq(mod ?posicion ?tamanoFila)0)) then ;mov a a la dch
-;        ;en esta situacion si se puede hacer el movimiento a la derecga
-;        )
-;
-;    )
-;    )
-;    ;mover abajo
-;    ;mover 
-;)
+(deffunction generarLineas (?x)
+  (printout t crlf)
+  (printout t "      |")
+  (loop-for-count ?x
+    (printout t "-----|")
+  )
+  (printout t crlf)
+)
+
+(deffunction generarLineas2 (?x)
+  (printout t " ")
+  (loop-for-count ?x
+    (printout t "     |")
+  )
+  (printout t "     |")
+  (printout t crlf)
+)
+
+;Imprimir el estado actual del mapeo
+(deffunction imprimir-mapeo ($?mapeo)
+    (bind ?tamanoFila (integer (sqrt (length$ $?mapeo))))
+    (printout ?tamanoFila)
+    (printout t crlf)
+    (printout t  crlf)
+    (loop-for-count (?i 0 ?tamanoFila) do
+      (if (= ?i 0) then
+      (printout t "       ")
+      else
+      (printout t "  "?i "   "))
+    )
+    (generarLineas ?tamanoFila)
+    (loop-for-count (?fila 1 ?tamanoFila ) do
+      (generarLineas2 ?tamanoFila)
+      (printout t "   " ?fila "  |" )
+      (loop-for-count (?columna 1 ?tamanoFila) do
+            (bind ?contenido (nth$  (+ (* ?tamanoFila (- ?fila 1)) ?columna) $?mapeo))
+			(if (or (eq ?contenido 1)(eq ?contenido -1)(eq ?contenido 2)(eq ?contenido -2)) then
+                (if (eq ?contenido 1) then
+                    (printout t  "  o  |")
+                )
+				(if (eq ?contenido -1) then
+                    (printout t  "  x  |")
+                )
+                (if (eq ?contenido 2) then
+                    (printout t  " oOo |")
+                )
+				(if (eq ?contenido -2) then
+                    (printout t  " xXx |")
+                )
+			else
+				(printout t "     |")
+			)
+      )
+      (generarLineas ?tamanoFila)
+    )
+)
+
+(deffunction seguirComiendo(?posOrigen $?mapeo)
+  (bind ?tamanoFila (sqrt(length$ $?mapeo)))
+  (bind ?posOrigen ?posOrigen)
+  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+
+  ;return $?(reina? X Y newmapeo  reina? X Y newmapeo    reina? X Y newmapeo    reina? X Y newmapeo)
+              ;(posible abajo)    ;(posible arriba)         ;(posible der)            ;(posible izq)
+  (bind $?nuevomapa (create$))
+
+  ;ficha normal
+  (if (or (eq ?fichaOrigen 1) (eq ?fichaOrigen -1)) then 
+    ;IZQUIERDA
+    (bind ?posDestino (- ?posOrigen 1))
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))  
+    
+    (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino 0) ) then ;no es posicion borde el contiguo, no es de mi color y no es vacio
+      (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq (nth$ (- ?posDestino 1) $?mapeo) 0)) then ;se comprueba primero que la posicion de al lado no es borde y despues que la posicion a la q se salta es 0    
+        (bind $?auxMap $?mapeo)
+        (bind $?auxMap (replace$ $?auxMap ?posDestino ?posDestino ?fichaOrigen))
+        (bind $?auxMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+        (bind $?auxMap (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+
+        (bind ?filaDestino ?filaOrigen)
+        (bind ?colDestino (- ?colOrigen 1)) 
+
+        (bind $?nuevomapa (create$ 0 ?filaDestino ?colDestino $?auxMap))
+      )
+    ) 
+
+    ;DERECHA
+    (bind ?posDestino (+ ?posOrigen 1))
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+    (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino 0)) then  ;no es posicion borde el contiguo, no es de mi color y no es vacio
+      (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq (nth$ (+ ?posDestino 1) $?mapeo) 0)) then ;se comprueba primero que la posicion de al lado no es borde y despues que la posicion a la q se salta es 0  
+        (bind $?auxMap $?mapeo)
+        (bind $?auxMap (replace$ $?auxMap ?posDestino ?posDestino ?fichaOrigen))
+        (bind $?auxMap (replace$ $?auxMap ?posOrigen ?posOrigen 0)) 
+        (bind $?newMap (replace$ $?newMap (+ ?posOrigen 1) (+ ?posOrigen 1) 0))
+
+        (bind ?filaDestino ?filaOrigen)
+        (bind ?colDestino (+ ?colOrigen 1)) 
+
+        (bind $?nuevomapa (create$ $?nuevomapa 0 ?filaDestino ?colDestino $?auxMap))
+      )
+    )
+
+    (if (eq ?fichaOrigen -1) ;negra no puede ir hacia abajo, no puede sumar fila
+      ;ABAJO
+      (bind ?filaDestino (+ ?filaOrigen 1))
+      (bind ?colDestino ?colOrigen)   
+      (bind ?posDestino (+ ?posOrigen ?tamanoFila))
+      (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+      (if (and (neq ?filaOrigen ?tamanoFila) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino 0)) then 
+        (if (and (neq ?filaDestino (?tamanoFila)) (eq (nth$ (+ ?posDestino ?tamanoFila) $?mapeo) 0)) then
+          ;crear dama
+          (if (and (or (<= ?posDestino ?tamanoFila) (> ?posDestino (- (* ?tamanoFila ?tamanoFila) ?tamanoFila))) (eq ?fichaOrigen ?t)) then ; (eq ?fichaOrigen ?tur) solo entra cuando es un peon del mismo color, si es una dama da igual porque no se va a cambiar
+          
+          else
+
+          )
+        )
+      )
+    else
+      ;ARRIBA
+      (bind ?filaDestino (- ?filaOrigen 1))
+      (bind ?colDestino ?colOrigen)
+      (bind ?posDestino (+ ?posOrigen ?tamanoFila))
+      (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
+      
+      (if (and (neq ?filaOrigen 1) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino 0)) then
+        (if (and (neq ?filaDestino 1) (eq (nth$ (- ?posDestino ?tamanoFila) $?mapeo) 0)) then
+          (bind $?comerHacia (create$ ?comerHacia 1))
+        )
+      )
+    ) 
+  
+  ;DAMA
+  else
+    (if)
+  )
+
+)
 
 (deffunction manhattanDistance (?origX ?origY ?destX ?destY)
   (bind ?distance (+ (abs (- ?origX ?destX)) (abs (- ?origY ?destY))))
@@ -166,38 +282,7 @@
 
 
 ;mov izq
-(defrule mov-izquierda
-  (idActual ?ID)
-  ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
-  (origen ?filaOrigen ?colOrigen)
 
-=>
-
-  (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-  (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
-  (bind ?posDestino (- ?posOrigen 1))
-  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
-  (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
-
-  (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then
-    (if (eq ?fichaDestino 0) then
-      (bind ?newId (+ ?ID 1))
-      (bind ?newPadre ?ID)
-      (bind ?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
-      (bind ?newMap (replace$ ?auxMap ?posOrigen ?posOrigen 0))
-       
-      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)));movs?
-      
-    else
-      
-      (bind ?saltoComer (nth$ (- ?posDestino 2) $?mapeo)) ;esta variable si es 0 significa q se puede comer porq hay hueco
-      (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq ?saltoComer 0)) then
-        (bind ?newId (+ ?ID (+ -1 2))) ;;;;;;;;;;;;;;;;QUITAR ESTO, ES CHORRA
-      )
-      
-    )
-  )
-)
 
 ;pasar a las funciones por parametro el tablero y el color de la ficha
 ;mov der
@@ -224,7 +309,7 @@
 
     (printout t "Inserta la profundidad a la que desarrollar los árboles:" crlf)
     (bind ?prof (read))
-    (assert (profundidad ?prof))
+    (assert (profundidad (integer(* ?prof 2))))
 
     (printout t "Elige el color que quieres ser 1(blanco) -1(negro):" crlf)
     (bind ?color (read))
