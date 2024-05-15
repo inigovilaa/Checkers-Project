@@ -100,7 +100,7 @@
 (if (eq ?reinaCreada 0) then
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
   (bind ?i 0)
-  (bind ?seguirMovDama 0)
+  (bind ?pararMovDama 0)
   (foreach ?ficha $?mapeo
   (bind ?i (+ ?i 1))
   
@@ -140,7 +140,7 @@
     )
   
   else
-(while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+(while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
   (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
     (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
       (bind ?newId (+ ?ID 1))
@@ -170,7 +170,7 @@
   )
     )
   else
-    (bind ?seguirMovDama 1)     
+    (bind ?pararMovDama 1)     
     )
   )
 
@@ -189,7 +189,7 @@
 (if (eq ?reinaCreada 0) then
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
   (bind ?i 0)
-  (bind ?seguirMovDama 0)
+  (bind ?pararMovDama 0)
   (foreach ?ficha $?mapeo ;se iteran todas las fichas del mapeo HAY Q PONER Q SOLO SE ITEREN LAS DEL TURNO Q TOCA??? (con lo de la profundidad y tal)
   (bind ?i (+ ?i 1))
   
@@ -228,7 +228,7 @@
   else                                  ;este else es para cuando la ficha q toca es una reina
                                         ;hay q hacer un while se puede seguir moviendo la reina...
   
-  (while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+  (while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
   (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
     (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
       (bind ?newId (+ ?ID 1))
@@ -257,7 +257,7 @@
   )
     )
   else
-    (bind ?seguirMovDama 1)     
+    (bind ?pararMovDama 1)     
     )
   )
   )
@@ -277,7 +277,7 @@
   (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
     (bind ?i 0)
-    (bind ?seguirMovDama 0)
+    (bind ?pararMovDama 0)
     (bind ?seguirComiendo 1)
     
     (foreach ?ficha $?mapeo
@@ -326,7 +326,7 @@
   
   else
     (if(or(eq ?ficha 2) (eq ?ficha -2)) then 
-      (while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+      (while (and (eq ?pararMovDama 0) (eq ?seguirComiendo 1));si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
         (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
           (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
             (bind ?newId (+ ?ID 1))
@@ -357,11 +357,9 @@
         )
           )
       else
-          (bind ?seguirMovDama 1)     
+          (bind ?pararMovDama 1)     
           )
   )    
-
-
 
     )  
   )
@@ -380,7 +378,7 @@
   (if (and (eq ?IA -1) (eq ?reinaCreada 0)) then ;solo se genera movimiento hacia abajo para las fichas blancas
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
     (bind ?i 0)
-    (bind ?seguirMovDama 0)
+    (bind ?pararMovDama 0)
     (bind ?seguirComiendo 1)
 
               
@@ -429,7 +427,7 @@
   )
     else
     (if(or(eq ?ficha 2) (eq ?ficha -2)) then 
-      (while (eq ?seguirMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+      (while (and (eq ?pararMovDama 0) (eq ?seguirComiendo 1)) ;si la var es 0 pararMovDama significa q se puede seguir moviendo la dama, si seguir comiendo es 0 es q no se puede seguir comiendo
       (if (and (neq ?filaOrigen 1) (neq ?fichaOrigen ?fichaDestino)) then
           (if (eq ?fichaDestino 0) then ;
             (bind ?newId (+ ?ID 1))
@@ -459,8 +457,11 @@
         (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
         )
           )
-      else
-          (bind ?seguirMovDama 1)     
+      else ;HAY QUE AÑADIR QUE SOLO PONGA LA SITUACION EN SITUACIONN BORDE si no se puede seguir comiendo, porq si se puede seguir comiendo hacia otra direccion
+      ;da igual que este en el borde
+
+      (if )
+          (bind ?pararMovDama 1)     
           )
   )    
 
@@ -563,6 +564,7 @@
             (Max 0)
             (turno ?z)
             (reinaCreada 0)
+            (esHoja 0)
           )
   )
 
