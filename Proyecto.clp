@@ -69,33 +69,6 @@
     )
 )
 
-;(deffunction posibles-movs (?fila ?columna)
-;    (bind ?tablero (find-fact ((?f tablero)) (= ?f:ID 1)))
-;    (bind ?mapeo ?tablero:mapeo)
-;    (bind ?tamanoFila (sqrt(length$ ?mapeo)))
-;    (bind ?posicion (+ (* ?tamanoFila (- ?fila 1)) ?columna))
-;    (bind ?contenido (nth$ ?posicion $?mapeo))
-;    (bind $?movimientos (create$))
-;
-;    (if (eq ?contenido 0) then
-;      (printout t "Posición vacía, elija otra posicion" crlf)
-;    else(
-;      if (eq ?contenido -1) then ;ficha negra
-;        if(eq(nth$ (+ ?posicion ?tamanoFila) ?mapeo) 0) then ;se puede hacer movimiento hacia abajo
-;
-;        else(
-;          if(and(eq(nth$ (+ ?posicion 1) ?mapeo) 0)(eq(mod ?posicion ?tamanoFila)0)) then ;mov a a la dch
-;        ;en esta situacion si se puede hacer el movimiento a la derecga
-;        )
-;
-;    )
-;    )
-;    ;mover abajo
-;    ;mover 
-;)
-
-
-
 
 (defrule pedir-movimiento
   (declare (salience 800))
@@ -113,9 +86,6 @@
   (bind ?lineaDestino (readline))
   (bind ?destinoReal (string-to-field(sub-string 1 1 ?lineaDestino)) (string-to-field(sub-string 3 3 ?lineaDestino)))
   
-
-
-
 )
 
 
@@ -123,12 +93,18 @@
 (defrule mov-izquierda
   (idActual ?ID)
   ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo $?mapeo))
-  (origen ?filaOrigen ?colOrigen)
+  ;(origen ?filaOrigen ?colOrigen)
 
 =>
 
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-  (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
+  (bind ?i 0)
+  (foreach ?ficha $?mapeo
+  (bind ?i (+ ?i 1))
+  (bind ?posOrigen ?i)
+  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
   (bind ?posDestino (- ?posOrigen 1))
   (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
   (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -154,8 +130,8 @@
 
         ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
       
+        )   
       )
-      
     )
   )
 )
@@ -169,7 +145,13 @@
 =>
 
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-  (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen)) ;esto es igual para todas las rules
+   (bind ?i 0)
+  (foreach ?ficha $?mapeo
+  (bind ?i (+ ?i 1))
+  (bind ?posOrigen ?i)
+  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
   (bind ?posDestino (+ ?posOrigen 1))
   (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
   (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -197,6 +179,7 @@
       )     
     )
   )
+  )
 )
 
 ;mov abajo
@@ -205,13 +188,18 @@
   (idActual ?ID)
   ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
   (origen ?filaOrigen ?colOrigen)
-  (IA ?IA)
+  (colorIA ?IA)
 
 =>
-
+; HAY QUE MOVEER EL IF??????
   (if(eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-    (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen)) ;esto es igual para todas las rules
+    (bind ?i 0)
+    (foreach ?ficha $?mapeo
+    (bind ?i (+ ?i 1))
+    (bind ?posOrigen ?i)
+    (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+    (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
     (bind ?posDestino (+ ?posOrigen ?tamanoFila))
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -240,22 +228,29 @@
       )
     )
   )
+  )
 )
 
 
 ;mov arriba
 
-(defrule mov-abajo
+(defrule mov-arriba
   (idActual ?ID)
   ?tab <- (tablero (ID ?ID)(padre ?padre)(mapeo ?mapeo))
   (origen ?filaOrigen ?colOrigen)
-  (IA ?IA)
+  (colorIA ?IA)
 
 =>
-
-  (if(eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
+;falta el loop que vaya cogiendo cada ficha y dentro del loop comprobacion de si la ficha es del color q toca
+  (if(eq ?IA 1) then ;solo se genera movimiento hacia abajo para las fichas blancas
     (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-    (bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen)) ;esto es igual para todas las rules
+     (bind ?i 0)
+  (foreach ?ficha $?mapeo
+    (bind ?i (+ ?i 1))
+    (bind ?posOrigen ?i)
+    (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+    (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
     (bind ?posDestino (+ ?posOrigen ?tamanoFila))
     (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
@@ -282,6 +277,7 @@
         )     
       )
     )
+  )
   )
 )
 
@@ -318,9 +314,9 @@
     (assert (colorReal ?color))
 
     (if (eq colorReal 1) then
-      (assert turno 1)
+      (assert (turno 1))
     else
-      (assert turno 0)
+      (assert (turno 0))
     )
 
 )
