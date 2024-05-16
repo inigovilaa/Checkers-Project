@@ -12,11 +12,23 @@
 )
 
 (deffunction eval-function2 (?color, ?tam, $?tablero)
+  ; ?i es una variable que lleva el numero de iteracion
   (bind ?i 1)
   (bind ?result 0)
   ; numero de fichas de cada jugador
   (bind ?mine 0)
   (bind ?opp 0)
+
+  (switch (es-ganador ?color $?tablero)
+    ; perdedor
+    (case 1 then (bind ?result (- ?result 1000000)))
+
+    ; tablas
+    (case 2 then (bind ?result (- ?result 1000)))
+
+    ; ganar
+    (case 3 then (bind ?result (+ ?result 1000000)))
+  )
 
   (foreach ?casilla $?tablero
     ; hay una ficha de mi color
@@ -41,6 +53,7 @@
           (bind ?opp (+ ?opp +1))
         ))
     )
+    (bind ?i (+ ?i 1))
   )
   (return (+ ?result (* (- ?mine ?opp) 1000) )
 )
