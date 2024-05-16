@@ -98,86 +98,103 @@
 
 =>
 (if (eq ?reinaCreada 0) then
-  (bind ?tamanoFila (sqrt(length$ $?mapeo)))
+  (bind ?tamanoFila (sqrt (length$ $?mapeo)))
   (bind ?i 0)
   (bind ?pararMovDama 0)
+  (bind ?reinaHaComido 0)
   (foreach ?ficha $?mapeo
-  (bind ?i (+ ?i 1))
+    (bind ?posOrigen ?i)
+    (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1)) ;calculo de la fila origen
+    (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1)) ;calculo de la columna origen
+    (bind ?posDestino (- ?posOrigen 1)) ; aunq 
+    (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo)) ; ficha origen para saber si es -1, 1, 2 o -2 la ficha
+    (bind ?fichaDestino (nth$ ?posDestino $?mapeo))    
+    
+    (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
+      (bind ?i (+ ?i 1))
   
-  (if(and(neq ?ficha -2) (neq ?ficha 2)) then  ;2 y -2 son las reinas blancas y negras
-  
-  (bind ?posOrigen ?i)
-  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
-  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
-  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
-  (bind ?posDestino (- ?posOrigen 1))
-  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
-  (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
-
-  (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
-    (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
-      (bind ?newId (+ ?ID 1))
-      (bind ?newPadre ?ID)
-      (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
-      (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
-       
-      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
-      
-    else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria
-      (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq (nth$ (- ?posDestino 1) $?mapeo) 0)) then ;se comprueba primero que la posicion de al lado no es borde y despues que la posicion a la q se salta es 0
-        (bind ?newId (+ ?ID 1))
-        (bind ?newPadre ?ID)
-        (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
-        (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
-        (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
-
-        (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
-
-        ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
-      
-        )   
-      )
-    )
-  
-  else
-(while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
-  (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
-    (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
-      (bind ?newId (+ ?ID 1))
-      (bind ?newPadre ?ID)
-      (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
-      (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
-       
-      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
-      
-    else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
-      (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq (nth$ (+ ?posDestino 1) $?mapeo) 0)) then ;se comprueba que 
-        (bind ?newId (+ ?ID 1))
-        (bind ?newPadre ?ID)
-        (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
-        (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
-        (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
+      (if(and(neq ?ficha -2) (neq ?ficha 2)) then  ;2 y -2 son las reinas blancas y negras
+        (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
+          (bind ?newId (+ ?ID 1))
+          (bind ?newPadre ?ID)
+          (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+          (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+          (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
         
-        (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
-  
-  (bind ?posOrigen (- ?posOrigen 1))
-  (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
-  (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
-  ;(bind ?posOrigen (+ (* ?tamanoFila (- ?filaOrigen 1)) ?colOrigen))
-  (bind ?posDestino (- ?posOrigen 1))
-  (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
-  (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
-  )
-    )
-  else
-    (bind ?pararMovDama 1)     
-    )
-  )
+        else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria
+          (if (and (neq (mod (- ?posOrigen 1) ?tamanoFila) 1) (eq (nth$ (- ?posDestino 1) $?mapeo) 0)) then ;se comprueba primero que la posicion de al lado no es borde y despues que la posicion a la q se salta es 0
+            (bind ?newId (+ ?ID 1))
+            (bind ?newPadre ?ID)
+            (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
+            (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+            (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
+            (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
 
+          ;TENEMOS QUE PENSAR COMO HACER CUANDO PUEDE SEGUIR COMIENDO
+        
+            )   
+          )
+       )
+  
+    else
+      (while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
+        (if (and (neq (mod ?posOrigen ?tamanoFila) 1) (neq ?fichaOrigen ?fichaDestino) ) then ;comprobacion posicion borde
+          (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
+            (bind ?newId (+ ?ID 1))
+            (bind ?newPadre ?ID)
+            (bind $?auxMap (replace$ $?mapeo ?posDestino ?posDestino ?fichaOrigen))
+            (bind $?newMap (replace$ $?auxMap ?posOrigen ?posOrigen 0))
+            (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+        
+          else ;caso en el que en la casilla a la q se quiere mover hay una ficha contraria    
+            (if (and (neq (mod (+ ?posOrigen 1) ?tamanoFila) 0) (eq (nth$ (+ ?posDestino 1) $?mapeo) 0)) then ;se comprueba que 
+              (bind ?newId (+ ?ID 1))
+              (bind ?newPadre ?ID)
+              (bind $?auxMap (replace$ $?mapeo (- ?posOrigen 2) (- ?posOrigen 2) ?fichaOrigen))
+              (bind $?auxMap2 (replace$ $?auxMap (- ?posOrigen 1) (- ?posOrigen 1) 0))
+              (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
+              (bind ?reinaHaComido 1)
+              (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))
+            )
+          )
+          (bind ?posOrigen (- ?posOrigen 1))
+          (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
+          (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
+          (bind ?posDestino (- ?posOrigen 1))
+          (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
+          (bind ?fichaDestino (nth$ ?posDestino $?mapeo))     
+        else ;este else indica q la reina esta en una posicion borde
+          (if (eq ?reinaHaComido 0) then ;en este caso si esta en borde y no ha comido ya no puede seguir movviendose
+            (bind ?pararMovDama 1)   ;se pone pararMovDama a 1 para salir del while
+          else
+            (bind $?comerMas seguirComiendo(?posOrigen $?newMap)) ;interpretamos lo que devuelve esta llamada para 
+              (if (eq (length$ $?comerMas) 0) ;la reina esta en una posicion borde y no puede seguir comiendo asiq ponemos ?pararMov a 1 para salir del while
+                (bind ?paraMov 1)
+              else
+                (bind ?j 1)
+                (?tamTablero (* ?tamanoFila ?tamanoFila))
+                (while (<= j (length$ $?comerMas))
+                  (bind ?reina (nth$ ?j $?comerMas))
+                  (bind ?destinoFila (nth$ (+ ?j 1) $?comerMas))
+                  (bind ?destinoCol (nth$ (+ ?j 2) $?comerMas))
+                  (bind ?j (+ ?j 3)) ;aqui en la primera iteracion la j vale 4
+                  (bind ?mapeoComer (subseq$ $?comerMas ?j (+ ?j (- ?tamTablero 1))))
+                  (bind ?newId (+ ?ID 1))
+                  (bind ?newPadre ?ID)
+                  (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?mapeoComer) (profundidad 0) (movs ) (Min 0) (Max 0) (reinaCreada ?reina)))
+                  (bind ?j (+ ?j ?tamTablero))
+                )
+              
+              )
+       )
+
+    )
   )
+    )
   )
 )
 )
+  
 
 ;mov der
 (defrule mov-derecha
@@ -190,6 +207,7 @@
   (bind ?tamanoFila (sqrt(length$ $?mapeo)))
   (bind ?i 0)
   (bind ?pararMovDama 0)
+  (bind ?reinaHaComido)
   (foreach ?ficha $?mapeo ;se iteran todas las fichas del mapeo HAY Q PONER Q SOLO SE ITEREN LAS DEL TURNO Q TOCA??? (con lo de la profundidad y tal)
   (bind ?i (+ ?i 1))
   
@@ -227,7 +245,6 @@
   )
   else                                  ;este else es para cuando la ficha q toca es una reina
                                         ;hay q hacer un while se puede seguir moviendo la reina...
-  
   (while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
   (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) ) then 
     (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
@@ -459,7 +476,7 @@
           )
       else ;HAY QUE AÑADIR QUE SOLO PONGA LA SITUACION EN SITUACIONN BORDE si no se puede seguir comiendo, porq si se puede seguir comiendo hacia otra direccion
       ;da igual que este en el borde
-
+;si no ha comido y esta en el borde se para
       (if )
           (bind ?pararMovDama 1)     
           )
