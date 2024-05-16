@@ -97,8 +97,7 @@
     (colorIA ?IA)
 
 =>
-  (bind ?tamanoFila (sqrt (length$ $?mapeo)))
-  (bind ?i 0)
+  (bind ?tamanoFila (integer(sqrt(length$ $?mapeo))))  (bind ?i 0)
   (bind ?pararMovDama 0)
   (bind ?reinaHaComido 0)
   (bind ?hacerAssert 1)
@@ -176,7 +175,6 @@
                )  
             )
        )
-  
     else ;aqui se entra cuando la ficha es una dama CUANDO ES UNA DAMA DAMA DAMA DAMA
       
       (while (eq ?pararMovDama 0) ;si la var es 0 significa q se puede seguir moviendo la dama hacia la derecha 
@@ -242,14 +240,15 @@
                   ) 
                   ;(bind ?stop 1)
                 )
-                  ; SOBRA CREO (bind ?pararMovDama 1)   ;se pone pararMovDama a 1 para salir del while principal (se pasa por aqui al salir del while de j...)
-              )
-            )
-        )
+              )  
+          )
+        )  
       )
     )
   )
-)
+)          ; SOBRA CREO (bind ?pararMovDama 1)   ;se pone pararMovDama a 1 para salir del while principal (se pasa por aqui al salir del while de j...)
+
+
 
   
 
@@ -260,8 +259,7 @@
   (colorIA ?IA)
 
 =>
-  (bind ?tamanoFila (sqrt(length$ $?mapeo)))
-  (bind ?i 0)
+  (bind ?tamanoFila (integer(sqrt(length$ $?mapeo))))  (bind ?i 0)
   (bind ?pararMovDama 0)
   (bind ?reinaHaComido)
   (bind ?hacerAssert 1)
@@ -277,7 +275,7 @@
       (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
       (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
 
-      (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2)) then 
+      (if (and (neq (mod ?posOrigen ?tamanoFila) 0) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2))) then 
         (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
           (bind ?newId (+ ?ID 1))
           (bind ?newPadre ?ID)
@@ -330,7 +328,9 @@
                         (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?mapeoComer) (profundidad 0) (movs (bind ?newMov ($create ?destinoFila ?destinoCol))) (Min 0) (Max 0)))
                       ) 
                   )
+                    ;(bind ?pararMovDama 1)   ;se pone pararMovDama a 1 para salir del while principal (se pasa por aqui al salir del while de j...)
                 )         
+              ;(assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs ) (Min 0) (Max 0)))     
               ) 
                )  
             )
@@ -356,7 +356,8 @@
               (bind $?newMap (replace$ $?auxMap2 ?posOrigen ?posOrigen 0))
               (bind ?reinaHaComido 1)
               (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?newMap) (profundidad 0) (movs (bind ?movs ($create ?filaOrigen (+ ?colOrigen 2)))) (Min 0) (Max 0)))
-    
+            )
+          )
               (bind ?posOrigen (+ ?posOrigen 1))
               (bind ?filaOrigen (+(div(- ?posOrigen 1) ?tamanoFila)1))
               (bind ?colOrigen (+(mod(- ?posOrigen 1) ?tamanoFila) 1))
@@ -374,25 +375,25 @@
                   (bind ?j 1)
                   (?tamTablero (* ?tamanoFila ?tamanoFila))
                   (while (and (<= ?j (length$ $?comerMas)) (eq ?stop 0))
-                  (bind ?reina (nth$ ?j $?comerMas))
-                  (bind ?destinoFila (nth$ (+ ?j 1) $?comerMas))
-                  (bind ?destinoCol (nth$ (+ ?j 2) $?comerMas))
-                  (bind ?j (+ ?j 3)) ;aqui en la primera iteracion la j vale 4
-                  (bind ?mapeoComer (subseq$ $?comerMas ?j (+ ?j (- ?tamTablero 1))))
-                  (bind ?j (+ ?j ?tamTablero))
-                  (bind ?posOrigen (+ (* ?tamanoFila (- ?destinoFila 1)) ?destinoCol))
-                  (bind ?newMov ($create ?destinoFila ?destinoCol)) ; SE CONCATENA EL NUEVO MOVIMIENTO DEVUELTO POR LA LLAMADA SEGUIR COMIENDO
-                  (bind $?auxComerMas seguirComiendo(?posOrigen $?mapeoComer)) ;REVISAR POSORIGEN, PORQ HA CAMBIADO NO? 
-                  (bind ?z 1)
-                  (while (and (neq (length$ $?auxComerMas) 0) (<= ?z (length$ $?comerMas)))
-                    (bind ?hacerAssert 0)
-                    (bind ?reina (nth$ ?z $?comerMas))
-                    (bind ?destinoFila (nth$ (+ ?z 1) $?comerMas))
-                    (bind ?destinoCol (nth$ (+ ?z 2) $?comerMas))
-                    (bind ?z (+ ?z 3)) ;aqui en la primera iteracion la j vale 4
-                    (bind ?mapeoComer (subseq$ $?comerMas ?z (+ ?z (- ?tamTablero 1))))
-                    (bind ?z (+ ?z ?tamTablero))
-                    (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?mapeoComer) (profundidad 0) (movs (bind ?newMov ($create ?destinoFila ?destinoCol))) (Min 0) (Max 0)))
+                    (bind ?reina (nth$ ?j $?comerMas))
+                    (bind ?destinoFila (nth$ (+ ?j 1) $?comerMas))
+                    (bind ?destinoCol (nth$ (+ ?j 2) $?comerMas))
+                    (bind ?j (+ ?j 3)) ;aqui en la primera iteracion la j vale 4
+                    (bind ?mapeoComer (subseq$ $?comerMas ?j (+ ?j (- ?tamTablero 1))))
+                    (bind ?j (+ ?j ?tamTablero))
+                    (bind ?posOrigen (+ (* ?tamanoFila (- ?destinoFila 1)) ?destinoCol))
+                    (bind ?newMov ($create ?destinoFila ?destinoCol)) ; SE CONCATENA EL NUEVO MOVIMIENTO DEVUELTO POR LA LLAMADA SEGUIR COMIENDO
+                    (bind $?auxComerMas seguirComiendo(?posOrigen $?mapeoComer)) ;REVISAR POSORIGEN, PORQ HA CAMBIADO NO? 
+                    (bind ?z 1)
+                    (while (and (neq (length$ $?auxComerMas) 0) (<= ?z (length$ $?comerMas)))
+                      (bind ?hacerAssert 0)
+                      (bind ?reina (nth$ ?z $?comerMas))
+                      (bind ?destinoFila (nth$ (+ ?z 1) $?comerMas))
+                      (bind ?destinoCol (nth$ (+ ?z 2) $?comerMas))
+                      (bind ?z (+ ?z 3)) ;aqui en la primera iteracion la j vale 4
+                      (bind ?mapeoComer (subseq$ $?comerMas ?z (+ ?z (- ?tamTablero 1))))
+                      (bind ?z (+ ?z ?tamTablero))
+                      (assert (tablero (ID ?newId) (padre ?newPadre) (heuristico 0.0) (mapeo $?mapeoComer) (profundidad 0) (movs (bind ?newMov ($create ?destinoFila ?destinoCol))) (Min 0) (Max 0)))
                     ;(bind $?auxComerMas seguirComiendo(?posOrigen $?mapeoComer)) ;REVISAR POSORIGEN, PORQ HA CAMBIADO NO? 
                   )  
                   (if (eq ?hacerAssert 1) then
@@ -405,6 +406,10 @@
             )
         )
       )
+    )
+  )
+)
+
 
 ;mov abajo
 
@@ -415,7 +420,7 @@
 =>
 ; HAY QUE MOVEER EL IF?????? REVUSAR EL IF LO DE IA -1
   ;(if (eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas negras (y para las damas)
-    (bind ?tamanoFila (sqrt(length$ $?mapeo)))
+    (bind ?tamanoFila (integer(sqrt(length$ $?mapeo))))    
     (bind ?i 0)
     (bind ?pararMovDama 0)
     (bind ?seguirComiendo 1)
@@ -433,7 +438,7 @@
         (bind ?fichaOrigen (nth$ ?posOrigen $?mapeo))
         (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
 
-        (if (and (neq ?filaOrigen ?tamanoFila) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2))  then ;comprobacion posicion borde
+        (if (and (neq ?filaOrigen ?tamanoFila) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2)))  then ;comprobacion posicion borde
           (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
             (bind ?newId (+ ?ID 1))
             (bind $?newPadre ?ID)
@@ -506,7 +511,7 @@
       )  
     )
   ))
-)
+
 
 
 ;mov arriba
@@ -519,7 +524,7 @@
 =>
 ;falta el loop que vaya cogiendo cada ficha y dentro del loop comprobacion de si la ficha es del color q toca
   ;(if (eq ?IA -1) then ;solo se genera movimiento hacia abajo para las fichas blancas
-    (bind ?tamanoFila (sqrt(length$ $?mapeo)))
+    (bind ?tamanoFila (integer(sqrt(length$ $?mapeo))))    
     (bind ?i 0)
     (bind ?pararMovDama 0)
     (bind ?seguirComiendo 1)
@@ -536,7 +541,7 @@
     (bind ?fichaDestino (nth$ ?posDestino $?mapeo))
     
     (if (eq ?ficha -1) then  ;si la ficha es blanca normal    
-      (if (and (neq ?filaOrigen 1) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2)) then
+      (if (and (neq ?filaOrigen 1) (neq ?fichaOrigen ?fichaDestino) (neq ?fichaDestino (* ?fichaOrigen 2))) then
         (if (eq ?fichaDestino 0) then ;significa q la ficha de al lado hay hueco
           (bind ?newId (+ ?ID 1))
           (bind $?newPadre ?ID)
