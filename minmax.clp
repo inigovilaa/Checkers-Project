@@ -1,3 +1,5 @@
+; AVISO A NAVEGANTES: las condiciones de ejecucion no las he comprobado y es posible que no sean las adecuadas. CAMBIAR
+
 (defrule heuristico
   ?d <- (depth ?depth)
 =>
