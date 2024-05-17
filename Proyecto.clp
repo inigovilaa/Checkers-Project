@@ -1,7 +1,7 @@
 (deftemplate tablero
   (slot ID (default 0))
   (slot padre (default 0))
-  (slot heuristico (default 0.0))
+  (slot heuristico (default 0))
   (multislot mapeo)
   (slot profundidad (default 0))
   (multislot movs)
