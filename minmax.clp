@@ -1,5 +1,37 @@
 ; AVISO A NAVEGANTES: las condiciones de ejecucion no las he comprobado y es posible que no sean las adecuadas. CAMBIAR
 
+; Recibe una depth y dos heuristicos (padre e hijo).
+; devuelve un booleano que indica si hay que modificar el padre
+(deffunction hay-que-modificar (?depth ?padre ?hijo)
+  ; par => minimizar
+  (if (eq (mod ?depth 2) 0) (
+    (return (> ?padre ?hijo))
+
+  ; impar => maximizar
+  ) else (
+    (return (< ?padre ?hijo))
+  ))
+
+)
+
+; calcula todos los heuristicos de las hojas
+(deffunction calcular-heuristicos ()
+  (do-for-all-facts ((?var tablero)) (eq ?var:esHoja 1)
+    (bind ?heur (eval-function2 ?color ?tam ?var:mapeo))
+    (modify ?var (esHoja 1) (heuristico ?heur))
+  )
+)
+
+(deffunction anadir-si-no-esta (?elemento $?lista)
+  ; Añadir
+  (if (eq (member$ ?elemento $?lista) FALSE) then (
+    (bind $?lista (create$ $?lista ?elemento))
+  ))
+  (return $?lista)
+)
+
+; REGLAS
+
 (defrule heuristico
   ?d <- (depth ?depth)
 =>
@@ -46,34 +78,4 @@
 
   ; una vez ya tenemos el mejor movimiento lo insertamos como hecho
   (assert (mejor-movimiento $?mejormovimiento))
-)
-
-; Recibe una depth y dos heuristicos (padre e hijo).
-; devuelve un booleano que indica si hay que modificar el padre
-(deffunction hay-que-modificar (?depth ?padre ?hijo)
-  ; par => minimizar
-  (if (eq (mod ?depth 2) 0) (
-    (return (> ?padre ?hijo))
-
-  ; impar => maximizar
-  ) else (
-    (return (< ?padre ?hijo))
-  ))
-
-)
-
-; calcula todos los heuristicos de las hojas
-(deffunction calcular-heuristicos ()
-  (do-for-all-facts ((?var tablero)) (eq ?var:esHoja 1)
-    (bind ?heur (eval-function2 ?color ?tam ?var:mapeo))
-    (modify ?var (esHoja 1) (heuristico ?heur))
-  )
-)
-
-(deffunction anadir-si-no-esta (?elemento $?lista)
-  ; Añadir
-  (if (eq (member$ ?elemento $?lista) FALSE) then (
-    (bind $?lista (create$ $?lista ?elemento))
-  ))
-  (return $?lista)
 )
