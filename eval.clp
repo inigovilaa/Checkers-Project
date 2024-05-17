@@ -340,11 +340,10 @@
     else 
       ; la ficha no es de nuestro color
       (if (not (mismo-color ?color ?casilla)) then
-        (
-          (bind ?opp (+ ?opp +1))
-          ; comprobamos si me pueden comer
-          (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (- ?result 3)))
-        ))
+        (bind ?opp (+ ?opp +1))
+        ; comprobamos si me pueden comer
+        (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (- ?result 3)))
+      )
     )
     (bind ?i (+ ?i 1))
   )
