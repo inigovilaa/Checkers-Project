@@ -778,7 +778,7 @@
   (bind ?i 0)
   (bind ?pararMovDama 0)
   (bind ?reinaHaComido 0)
-  ;(bind ?hacerAssert 1) no sirve creo
+  (bind ?hacerAssert 1)
   (bind ?seguirComiendo 1) ; NOSE SI HACE FALTA AQUI INICIALIZARLO
   
   (bind ?numSigTab (+ ?numTab1 1));;;
