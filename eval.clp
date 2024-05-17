@@ -3,7 +3,7 @@
 ; Le pasas el mapeo del tablero y te devuelve la función de evaluación
 ; ?color indica con que color esta jugando la IA para saber si tiene que maximizar o minimizar
 ; esta funcion por ahora no tiene en cuenta que el jugador es +1
-(deffunction eval-function ($?tablero, ?color)
+(deffunction eval-function ($?tablero ?color)
   (bind ?valor 0)
   (foreach ?casilla $?tablero 
     (bind ?valor (+ ?valor ?casilla))
@@ -11,7 +11,7 @@
   (return ?valor)
 )
 
-(deffunction eval-function2 (?color, ?tam, $?tablero)
+(deffunction eval-function2 (?color ?tam $?mapeo) ;profundidad tambien -> y con eso sacamos a quien le tocaria en la siguiente jjugada
   ; ?i es una variable que lleva el numero de iteracion
   (bind ?i 1)
   (bind ?result 0)
@@ -55,7 +55,7 @@
     )
     (bind ?i (+ ?i 1))
   )
-  (return (+ ?result (* (- ?mine ?opp) 1000) )
+  (return (+ ?result (* (- ?mine ?opp) 1000) ))
 )
 
 ; recibe una casilla y devuele un +1, -1 o 0 dependiendo del color que sea
@@ -82,7 +82,7 @@
 )
 
 (defrule eval-function-apply
-  ?tablero <- (Tablero (ID ?)(Padre ?)(Heuristico 0)(Mapeo $?tablero)(Prof ?)(Movs ?)(Min ?)(Max ?)
+  ?tablero <- ( Tablero (ID ?) (Padre ?) (Heuristico 0) (Mapeo $?tablero) (Prof ?) (Movs ?) (Min ?) (Max ?) )
   (colorReal ?color)
   (tam ?tam)
 =>
