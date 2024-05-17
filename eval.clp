@@ -1,9 +1,33 @@
 ; +1 blanco, +2 dama blanca
 ; -1 negro, -2 dama negra
+
+; recibe una casilla y devuele un +1, -1 o 0 dependiendo del color que sea
+(deffunction que-color-es (?casilla)
+  (if (or (eq ?casilla +1) (eq ?casilla +2)) then (return +1))
+  (if (or (eq ?casilla -1) (eq ?casilla -2)) then (return -1))
+  (return 0)
+)
+
+; ?color puede ser {+1, -1} y comprueba que tenga el mismo color que la casilla
+; devuelve TRUE or FALSE
+(deffunction mismo-color (?color ?casilla)
+  (eq ?color (que-color-es ?casilla))
+)
+
+; devuelve un booleano indicando si en la casilla hay una dama de mi color
+(deffunction es-mi-dama (?color ?casilla)
+  (return (and (mismo-color ?color ?casilla) (or (eq ?casilla +2) (eq ?casilla -2))))
+)
+
+; devuelve un booleano indicando si se puede comer
+(deffunction es-mi-peon (?color ?casilla)
+  (return (and (mismo-color ?color ?casilla) (or (eq ?casilla +1) (eq ?casilla -1))))
+)
+
 ; Le pasas el mapeo del tablero y te devuelve la función de evaluación
 ; ?color indica con que color esta jugando la IA para saber si tiene que maximizar o minimizar
 ; esta funcion por ahora no tiene en cuenta que el jugador es +1
-(deffunction eval-function ($?tablero, ?color)
+(deffunction eval-function (?color $?tablero)
   (bind ?valor 0)
   (foreach ?casilla $?tablero 
     (bind ?valor (+ ?valor ?casilla))
@@ -11,7 +35,7 @@
   (return ?valor)
 )
 
-(deffunction eval-function2 (?color, ?tam, $?tablero)
+(deffunction eval-function2 (?color ?tam $?tablero)
   ; ?i es una variable que lleva el numero de iteracion
   (bind ?i 1)
   (bind ?result 0)
@@ -59,37 +83,4 @@
   )
   (return (+ ?result (* (- ?mine ?opp) 1000) )
 )
-
-; recibe una casilla y devuele un +1, -1 o 0 dependiendo del color que sea
-(deffunction que-color-es (?casilla)
-  (if (or (eq ?casilla +1) (eq ?ficha +2)) then (return +1))
-  (if (or (eq ?casilla -1) (eq ?ficha -2)) then (return -1))
-  (return 0)
-)
-
-; ?color puede ser {+1, -1} y comprueba que tenga el mismo color que la casilla
-; devuelve TRUE or FALSE
-(deffunction mismo-color (?color ?casilla)
-  (eq ?color (que-color-es ?casilla))
-)
-
-; devuelve un booleano indicando si en la casilla hay una dama de mi color
-(deffunction es-mi-dama (?color ?casilla)
-  (return (and (mismo-color ?color ?casilla) (or (eq ?casilla +2) (eq ?casilla -2))))
-)
-
-; devuelve un booleano indicando si se puede comer
-(deffunction es-mi-peon (?color ?casilla)
-  (return (and (mismo-color ?color ?casilla) (or (eq ?casilla +1) (eq ?casilla -1))))
-)
-
-(defrule eval-function-apply
-  ?tablero <- (Tablero (ID ?)(Padre ?)(Heuristico 0)(Mapeo $?tablero)(Prof ?)(Movs ?)(Min ?)(Max ?)
-  (colorReal ?color)
-  (tam ?tam)
-=>
-  (bind ?heur (eval-function2 ?color ?tam $?tablero))
-  (modify ?fn (heuristico ?heur))
-)
-
 
