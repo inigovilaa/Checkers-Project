@@ -43,7 +43,7 @@
         (if (es-mi-dama ?color ?casilla) then (bind ?result (+ ?result 10)) )
 
         ; ahora comprobamos que si puedo comer
-        (if (eq (seguir-comiendo ?i $?tablero) 0) then (bind ?result (+ ?result 6)))
+        (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (+ ?result 6)))
       )
     
     else 
@@ -52,7 +52,7 @@
         (
           (bind ?opp (+ ?opp +1))
           ; comprobamos si me pueden comer
-          (if (eq (seguir-comiendo ?i $?tablero) 0) then (bind ?result (- ?result 3)))
+          (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (- ?result 3)))
         ))
     )
     (bind ?i (+ ?i 1))
