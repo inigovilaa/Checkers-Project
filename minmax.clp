@@ -3,15 +3,15 @@
 ; Recibe una depth y dos heuristicos (padre e hijo).
 ; devuelve un booleano que indica si hay que modificar el padre
 (deffunction hay-que-modificar (?depth ?padre ?hijo)
+  (bind ?devolver FALSE)
   ; par => minimizar
-  (if (eq (mod ?depth 2) 0) (
-    (return (> ?padre ?hijo))
-
+  (if (eq (mod ?depth 2) 0) then
+    (bind ?devolver (> ?padre ?hijo))
   ; impar => maximizar
-  ) else (
-    (return (< ?padre ?hijo))
-  ))
-
+  else 
+    (bind ?devolver (< ?padre ?hijo))
+  )
+  (return ?devolver)
 )
 
 ; calcula todos los heuristicos de las hojas
@@ -22,16 +22,7 @@
   )
 )
 
-(deffunction anadir-si-no-esta (?elemento $?lista)
-  ; Añadir
-  (if (eq (member$ ?elemento $?lista) FALSE) then (
-    (bind $?lista (create$ $?lista ?elemento))
-  ))
-  (return $?lista)
-)
-
 ; REGLAS
-
 (defrule heuristico
   ?d <- (depth ?depth)
 =>
