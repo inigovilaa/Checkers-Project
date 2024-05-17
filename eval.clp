@@ -11,7 +11,7 @@
   (return ?valor)
 )
 
-(deffunction eval-function2 (?color ?tam $?mapeo) ;profundidad tambien -> y con eso sacamos a quien le tocaria en la siguiente jjugada
+(deffunction eval-function2 (?color ?tam $?tablero)
   ; ?i es una variable que lleva el numero de iteracion
   (bind ?i 1)
   (bind ?result 0)
@@ -42,8 +42,8 @@
         ; es una dama de mi color
         (if (es-mi-dama ?color ?casilla) then (bind ?result (+ ?result 10)) )
 
-        ; ahora comprobamos que si me pueden comer
-        ; ...
+        ; ahora comprobamos que si puedo comer
+        (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (+ ?result 6)))
       )
     
     else 
@@ -51,6 +51,8 @@
       (if (not (mismo-color ?color ?casilla)) then
         (
           (bind ?opp (+ ?opp +1))
+          ; comprobamos si me pueden comer
+          (if (neq (length$ (seguirComiendo ?i $?tablero)) 0) then (bind ?result (- ?result 3)))
         ))
     )
     (bind ?i (+ ?i 1))
@@ -82,12 +84,10 @@
 )
 
 (defrule eval-function-apply
-  ?tablero <- ( Tablero (ID ?) (Padre ?) (Heuristico 0) (Mapeo $?tablero) (Prof ?) (Movs ?) (Min ?) (Max ?) )
+  ?tablero <- (Tablero (ID ?)(Padre ?)(Heuristico 0)(Mapeo $?tablero)(Prof ?)(Movs ?)(Min ?)(Max ?) ) 
   (colorReal ?color)
   (tam ?tam)
 =>
   (bind ?heur (eval-function2 ?color ?tam $?tablero))
   (modify ?fn (heuristico ?heur))
 )
-
-
