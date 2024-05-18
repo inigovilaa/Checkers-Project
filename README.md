@@ -16,8 +16,8 @@ El objetivo principal de este proyecto es implementar un motor de juego de Damas
 * Evaluar y mejorar el rendimiento del motor de juego y el agente de IA mediante técnicas de aprendizaje automático y búsqueda heurística.
 
 ## Colaboradores
-Jiayuan Wang
-Iñigo Vilá
+* Jiayuan Wang
+* Iñigo Vilá
 
 ## Feedback y preguntas
 Para cualquier comentario, pregunta o soporte relacionado con el proyecto, por favor contacte con ivila006@ikasle.ehu.eus o jwang005@ikasle.ehu.eus.
