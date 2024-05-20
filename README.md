@@ -1,4 +1,6 @@
-﻿# Checkers-Project
+﻿> DOES NOT WORK
+
+# Checkers-Project
 Este proyecto consiste en la implementación de un juego de Damas Turcas utilizando técnicas de Inteligencia Artificial (IA) para desarrollar un motor de juego capaz de jugar contra un usuario humano o contra otro agente de IA.
 
 > #### **Warning!**
@@ -17,7 +19,8 @@ El objetivo principal de este proyecto es implementar un motor de juego de Damas
 
 ## Colaboradores
 * Jiayuan Wang
-* Iñigo Vilá
+* Inigo Vila
+* Yeray Li
 
 ## Feedback y preguntas
 Para cualquier comentario, pregunta o soporte relacionado con el proyecto, por favor contacte con ivila006@ikasle.ehu.eus o jwang005@ikasle.ehu.eus.
